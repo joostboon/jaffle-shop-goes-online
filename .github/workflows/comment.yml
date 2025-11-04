@@ -1,0 +1,50 @@
+name: Reply Once Per PR Based on Comment Count
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  reply-to-first-comment:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Check comment count via API
+        id: check_comment_count
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue_number = context.issue.number;
+            const repo = context.repo;
+            const octokit = github;
+
+            // Fetch comments list to check how many exist
+            const { data: comments } = await octokit.rest.issues.listComments({
+              owner: repo.owner,
+              repo: repo.repo,
+              issue_number: issue_number,
+            });
+
+            // If the total count is 1, this is the very first comment
+            if (comments.length === 1) {
+              console.log("This is the first comment. Setting output to true.");
+              core.setOutput('is_first_comment', true);
+            } else {
+              console.log("Not the first comment. Setting output to false.");
+              core.setOutput('is_first_comment', false);
+            }
+          result-encoding: json
+
+      - name: Post reply only if it's the first comment
+        # Proceed only if the previous step verified it's the first comment
+        if: steps.check_comment_count.outputs.is_first_comment == 'true'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            Based on the dasbhoards impact, can I safely merge?
+            Make it really clear if I can or cannot merge.
+            
