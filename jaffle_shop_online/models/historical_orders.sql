@@ -32,7 +32,6 @@ final as (
         {% for payment_method in payment_methods -%}
         op.{{ payment_method }}_amount,
         {% endfor -%}
-        op.total_amount    as amount
     from orders o
     left join order_payments op on o.order_id = op.order_id
 )
