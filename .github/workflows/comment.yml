@@ -45,6 +45,5 @@ jobs:
         with:
           issue-number: ${{ github.event.issue.number }}
           body: |
-            Based on the dasbhoards impact, can I safely merge?
+            @coderabbitai Based on the dasbhoards impact, can I safely merge?
             Make it really clear if I can or cannot merge.
-            
